@@ -3,7 +3,7 @@ import '../models/service.dart';
 import 'cleaning.dart';
 
 class SelectService extends StatefulWidget {
-  const SelectService({ Key? key }) : super(key: key);
+  const SelectService({Key? key}) : super(key: key);
 
   @override
   State<SelectService> createState() => _SelectServiceState();
@@ -11,7 +11,7 @@ class SelectService extends StatefulWidget {
 
 class _SelectServiceState extends State<SelectService> {
   List<Services> services = [
-    Services('Cleaning', 'assets/images/clean.png'),
+    Services('Cleaning', 'assets/images/cleaning.png'),
     Services('Plumber', 'assets/images/plumber.png'),
     Services('Electrician', 'assets/images/electrician.png'),
     Services('Painter', 'assets/images/painter.png'),
@@ -27,24 +27,27 @@ class _SelectServiceState extends State<SelectService> {
       backgroundColor: Colors.white,
       floatingActionButton: selectedService >= 0
           ? FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>CleaningPage(serviceName: services[selectedService].name,),
-            ),
-          );
-        },
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.arrow_forward_ios, size: 20),
-      )
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CleaningPage(
+                      serviceName: services[selectedService].name,
+                    ),
+                  ),
+                );
+              },
+              backgroundColor: Colors.blue,
+              child: const Icon(Icons.arrow_forward_ios, size: 20),
+            )
           : null,
       body: NestedScrollView(
         headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
           return <Widget>[
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.only(top: 20.0, right: 20.0, left: 20.0),
+                padding:
+                    const EdgeInsets.only(top: 20.0, right: 20.0, left: 20.0),
                 child: Text(
                   'Which service \ndo you need?',
                   style: TextStyle(
@@ -103,9 +106,13 @@ class _SelectServiceState extends State<SelectService> {
         duration: const Duration(milliseconds: 300),
         padding: const EdgeInsets.all(10.0),
         decoration: BoxDecoration(
-          color: selectedService == index ? Colors.blue.shade50 : Colors.grey.shade100,
+          color: selectedService == index
+              ? Colors.blue.shade50
+              : Colors.grey.shade100,
           border: Border.all(
-            color: selectedService == index ? Colors.blue : Colors.blue.withOpacity(0),
+            color: selectedService == index
+                ? Colors.blue
+                : Colors.blue.withOpacity(0),
             width: 2.0,
           ),
           borderRadius: BorderRadius.circular(20.0),
@@ -114,7 +121,10 @@ class _SelectServiceState extends State<SelectService> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Image.asset(image, height: 80),
+              Hero(
+                tag: services[index].name,
+                child: Image.asset(image, height: 80),
+              ),
               const SizedBox(height: 20),
               Text(name, style: const TextStyle(fontSize: 20)),
             ],

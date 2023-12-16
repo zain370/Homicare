@@ -46,6 +46,12 @@ dependencies:
   firebase_core: ^2.24.2
   firebase_auth: ^4.15.2
   scrollable_positioned_list: ^0.3.8
+  google_nav_bar: ^5.0.6
+  line_icons: ^2.0.3
+  flutter_local_notifications: ^16.2.0
+  firebase_messaging: ^14.7.9
+  uuid: ^4.2.2
+
 
 dev_dependencies:
   flutter_test:

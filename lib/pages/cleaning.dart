@@ -46,7 +46,7 @@ class _CleaningPageState extends State<CleaningPage> {
             Navigator.push(
               context,
               CupertinoPageRoute(
-                builder: (context) => DateAndTime(selectedRoomsData: selectedRoomsData),
+                builder: (context) => DateAndTime(selectedRoomsData: selectedRoomsData, serviceName: widget.serviceName,),
               ),
             );
           }

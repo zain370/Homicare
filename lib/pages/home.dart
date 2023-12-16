@@ -1,8 +1,12 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:homicare/pages/cleaning.dart';
 import 'package:homicare/pages/select_service.dart';
+import 'package:homicare/pages/start.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/service.dart';
+import 'full_picture.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -12,13 +16,59 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String? userName = '';
+  String? photoUrl = '';
+
+  Future<void> logoutUser(BuildContext context) async {
+    bool confirmLogout = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: const Text('Confirm Logout'),
+          content: const Text('Are you sure you want to logout?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false); // Cancel the logout
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true); // Confirm the logout
+              },
+              child: const Text(
+                'Logout',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmLogout == true) {
+      try {
+        await FirebaseAuth.instance.signOut();
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setBool("loggedIn", false);
+        prefs.setBool("isAdmin", false);
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => StartPage()),
+          (route) => false,
+        );
+      } catch (e) {
+        print(e.toString());
+      }
+    }
+  }
+
   List<Services> services = [
-    Services('Cleaning',
-        'assets/images/clean.png'),
-    Services('Plumber',
-        'assets/images/plumber.png'),
-    Services('Electrician',
-        'assets/images/electrician.png'),
+    Services('Cleaning', 'assets/images/cleaning.png'),
+    Services('Plumber', 'assets/images/plumber.png'),
+    Services('Electrician', 'assets/images/electrician.png'),
   ];
 
   List<dynamic> workers = [
@@ -43,34 +93,52 @@ class _HomePageState extends State<HomePage> {
   ];
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    fetchUserName();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.transparent,
-          title: const Text('Dashboard',
-              style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+          title: Text('Hi, $userName',
+              style: const TextStyle(
+                  color: Colors.black, fontWeight: FontWeight.bold)),
           elevation: 0,
           actions: [
             IconButton(
-              onPressed: () {},
-              icon: Icon(
-                Icons.notifications_none,
-                color: Colors.grey.shade700,
-                size: 30,
+              onPressed: () {
+                logoutUser(context);
+              },
+              icon: Hero(
+                tag: 'full',
+                child: Icon(
+                  Icons.login_outlined,
+                  color: Colors.grey.shade700,
+                  size: 30,
+                ),
               ),
             )
           ],
           leading: GestureDetector(
             onTap: () {
-              Navigator.pushNamed(context, '/login');
+              Navigator.push(
+                  context,
+                  CupertinoPageRoute(
+                      builder: (c) => FullPicture(url: photoUrl!)));
             },
-            child: const Padding(
-              padding: EdgeInsets.all(10.0),
-              child: CircleAvatar(
-                backgroundImage: NetworkImage(
-                    'https://images.unsplash.com/photo-1506803682981-6e718a9dd3ee?ixlib=rb-0.3.5&q=80&fm=jpg&crop=faces&fit=crop&h=200&w=200&s=c3a31eeb7efb4d533647e3cad1de9257'),
-              ),
+            child: Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: photoUrl!.isNotEmpty
+                  ? CircleAvatar(
+                      backgroundImage: NetworkImage(photoUrl!),
+                    )
+                  : const CircleAvatar(
+                      child: Icon(CupertinoIcons.person),
+                    ),
             ),
           ),
         ),
@@ -85,11 +153,6 @@ class _HomePageState extends State<HomePage> {
                   'Recent',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                TextButton(
-                    onPressed: () {},
-                    child: const Text(
-                      'View all',
-                    ))
               ],
             ),
           ),
@@ -117,9 +180,8 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       ClipRRect(
                           borderRadius: BorderRadius.circular(15.0),
-                          child: Image.network(
-                            'https://images.pexels.com/photos/355164/pexels-photo-355164.jpeg?crop=faces&fit=crop&h=200&w=200&auto=compress&cs=tinysrgb',
-                            width: 70,
+                          child: const CircleAvatar(
+                            child: Icon(CupertinoIcons.person),
                           )),
                       const SizedBox(
                         width: 15,
@@ -208,20 +270,15 @@ class _HomePageState extends State<HomePage> {
           const SizedBox(
             height: 20,
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 20.0, right: 10.0),
+          const Padding(
+            padding: EdgeInsets.only(left: 20.0, right: 10.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Top Rated',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
-                TextButton(
-                    onPressed: () {},
-                    child: const Text(
-                      'View all',
-                    ))
               ],
             ),
           ),
@@ -244,9 +301,12 @@ class _HomePageState extends State<HomePage> {
 
   serviceContainer(String image, String name, int index) {
     return GestureDetector(
-      onTap: ()
-      {
-        Navigator.push(context, CupertinoPageRoute(builder: (c) =>CleaningPage(serviceName: services[index].name)));
+      onTap: () {
+        Navigator.push(
+            context,
+            CupertinoPageRoute(
+                builder: (c) =>
+                    CleaningPage(serviceName: services[index].name)));
       },
       child: Container(
         margin: const EdgeInsets.only(right: 5),
@@ -260,18 +320,20 @@ class _HomePageState extends State<HomePage> {
           borderRadius: BorderRadius.circular(20.0),
         ),
         child: SingleChildScrollView(
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(image, height: 45),
-                const SizedBox(
-                  height: 20,
-                ),
-                Text(
-                  name,
-                  style: const TextStyle(fontSize: 15),
-                )
-              ]),
+          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+            image.isNotEmpty
+                ? Hero(
+                    tag: services[index].name,
+                    child: Image.asset(image, height: 45))
+                : const CircleAvatar(),
+            const SizedBox(
+              height: 20,
+            ),
+            Text(
+              name,
+              style: const TextStyle(fontSize: 15),
+            )
+          ]),
         ),
       ),
     );
@@ -292,56 +354,62 @@ class _HomePageState extends State<HomePage> {
             ),
             borderRadius: BorderRadius.circular(20.0),
           ),
-          child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                ClipRRect(
-                    borderRadius: BorderRadius.circular(15.0),
-                    child: Image.network(image)),
+          child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            ClipRRect(
+                borderRadius: BorderRadius.circular(15.0),
+                child: image.isNotEmpty
+                    ? Image.network(image)
+                    : const CircleAvatar()),
+            const SizedBox(
+              width: 20,
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(
-                  width: 20,
+                  height: 5,
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(
-                      height: 5,
-                    ),
-                    Text(
-                      job,
-                      style: const TextStyle(fontSize: 15),
-                    )
-                  ],
-                ),
-                const Spacer(),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      rating.toString(),
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(
-                      height: 5,
-                    ),
-                    const Icon(
-                      Icons.star,
-                      color: Colors.orange,
-                      size: 20,
-                    )
-                  ],
+                Text(
+                  job,
+                  style: const TextStyle(fontSize: 15),
                 )
-              ]),
+              ],
+            ),
+            const Spacer(),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  rating.toString(),
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(
+                  height: 5,
+                ),
+                const Icon(
+                  Icons.star,
+                  color: Colors.orange,
+                  size: 20,
+                )
+              ],
+            )
+          ]),
         ),
       ),
     );
+  }
+
+  Future fetchUserName() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    userName = user?.displayName!;
+    photoUrl = user?.photoURL!;
   }
 }

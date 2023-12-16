@@ -5,22 +5,26 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:homicare/pages/admin/home_services_admin.dart';
+import 'package:homicare/pages/admin/home_editor_admin.dart';
 import 'package:homicare/pages/admin/signin_admin.dart';
-import 'package:homicare/pages/home_page_editor.dart';
+import 'package:homicare/pages/login_page.dart';
 import 'package:homicare/pages/reset.dart';
+import 'package:homicare/pages/home.dart';
+import 'package:homicare/pages/sign_up_page.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({
+class LoginAdmin extends StatefulWidget {
+  const LoginAdmin({
     super.key,
   });
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<LoginAdmin> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginAdmin> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passController = TextEditingController();
   bool _obscureText = true;
@@ -37,7 +41,13 @@ class _LoginPageState extends State<LoginPage> {
     final mediaQuerySize = MediaQuery.of(context).size;
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text(
+          "Service Provider",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
       backgroundColor: CupertinoColors.white,
       body: SingleChildScrollView(
         child: Column(
@@ -67,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
                 const SizedBox(
-                  height: 10,
+                  height: 15,
                 ),
                 const Row(children: [
                   Padding(
@@ -79,7 +89,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ]),
                 const SizedBox(
-                  height: 20,
+                  height: 30,
                 ),
                 SizedBox(
                   width: mediaQuerySize.width * 0.91,
@@ -191,12 +201,12 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 SizedBox(
-                  height: mediaQuerySize.width * 0.05,
+                  height: mediaQuerySize.height * 0.09,
                 ),
                 InkWell(
                   onTap: () {
                     if (_formKey.currentState?.validate() ?? false) {
-                      loginUser(context, emailController, passController);
+                      loginUserAdmin(context, emailController, passController);
                     }
                   },
                   child: Container(
@@ -232,54 +242,32 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                 ),
-                SizedBox(height: mediaQuerySize.width * 0.035),
-                Column(children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: InkWell(
-                      onTap: () {
-                        signInWithGoogle();
-                      },
-                      child: SizedBox(
-                        height: mediaQuerySize.width * 0.12,
-                        width: 50,
-                        child: SizedBox.square(
-                          child: Image.asset(
-                            'assets/images/google.png',
-                            // Replace with the path to your Google icon
-                            height: 30,
-                            width: 30,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    height: mediaQuerySize.height * .014,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text("Service provider? "),
-                      GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            CupertinoPageRoute(
-                                builder: (context) => const LoginAdmin()),
-                          );
-                        },
-                        child: const Text(
-                          "Login",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline,
-                              fontSize: 15),
-                        ),
-                      ),
-                    ],
-                  ),
-                ]),
+                // SizedBox(height: mediaQuerySize.width * 0.035),
+                // Column(children: [
+                //   Padding(
+                //     padding: const EdgeInsets.symmetric(horizontal: 10),
+                //     child: InkWell(
+                //       onTap: () {
+                //         signInWithGoogle();
+                //       },
+                //       child: SizedBox(
+                //         height: mediaQuerySize.width * 0.12,
+                //         width: 50,
+                //         child: SizedBox.square(
+                //           child: Image.asset(
+                //             'assets/images/google.png',
+                //             // Replace with the path to your Google icon
+                //             height: 30,
+                //             width: 30,
+                //           ),
+                //         ),
+                //       ),
+                //     ),
+                //   ),
+                //   SizedBox(
+                //     height: mediaQuerySize.height * .014,
+                //   ),
+                // ]),
               ],
             ),
           ],
@@ -288,8 +276,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-// Function to log in the user
-  void loginUser(context, emailController, passController) async {
+  void loginUserAdmin(context, emailController, passController) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     BuildContext? dialogContext;
 
@@ -317,6 +304,9 @@ class _LoginPageState extends State<LoginPage> {
       if (userData != null) {
         // Check if the user's email is verified
         if (userData.emailVerified) {
+          // Fetch user role based on uid
+          String userUid = userData.uid;
+          String userRole = await fetchUserRoleFromBackend(userUid);
           // Get FCM token
           String? fcmToken = await FirebaseMessaging.instance.getToken();
 
@@ -328,19 +318,15 @@ class _LoginPageState extends State<LoginPage> {
             'fcmToken': fcmToken,
           });
 
-          // Continue with the rest of your login logic...
-
-          String userUid = userData.uid;
-          String userRole = await fetchUserRoleFromBackend(userUid);
-
           Navigator.pop(dialogContext!);
 
-          if (userRole == "client") {
+          if (userRole == "admin") {
             // User is an admin, navigate to home page
             prefs.setBool("loggedIn", true);
+            prefs.setBool("isAdmin", true);
             Navigator.pushAndRemoveUntil(
               context,
-              CupertinoPageRoute(builder: (context) => const MyHomePage()),
+              CupertinoPageRoute(builder: (context) => const MyHomePageAdmin()),
               (route) => false,
             );
           } else {
@@ -349,7 +335,7 @@ class _LoginPageState extends State<LoginPage> {
               context: context,
               builder: (context) {
                 return CupertinoAlertDialog(
-                  title: const Text('Login as an Admin!'),
+                  title: const Text('Login as a client!'),
                   actions: [
                     CupertinoDialogAction(
                       child: const Text("OK"),
@@ -373,97 +359,147 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pop(context);
         }
       }
-    } catch (e) {
-      // Handle exceptions
-      print('Error logging in: $e');
-    }
-  }
-
-  // Function to sign in with Google
-  Future<void> signInWithGoogle() async {
-    BuildContext? dialogContext;
-
-    try {
-      showDialog(
+    } on FirebaseAuthException catch (e) {
+      // Handle FirebaseAuthException
+      print(e.toString());
+      Navigator.pop(dialogContext!); // Dismiss the dialog
+      String errorMessage = "An undefined error occurred";
+      if (e.code == 'user-disabled') {
+        errorMessage = 'User has been disabled';
+      } else if (e.code == 'too-many-requests') {
+        errorMessage =
+            'Too many unsuccessful login attempts. Please try again later.';
+      } else if (e.code == 'INVALID_LOGIN_CREDENTIALS') {
+        errorMessage = 'Invalid email or password';
+      } else {
+        errorMessage = 'User not Registered';
+      }
+      await showCupertinoDialog(
         context: context,
-        builder: (BuildContext context) {
-          dialogContext = context;
-          return SizedBox(
-            height: 30,
-            child: Lottie.asset('assets/images/loading.json', repeat: true),
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: Text(errorMessage),
+            actions: [
+              CupertinoDialogAction(
+                child: const Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
           );
         },
       );
+    }
+  }
 
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) {
-        Navigator.pop(dialogContext!);
-        return;
-      }
+//   Future<void> signInWithGoogle() async {
+//     BuildContext? dialogContext;
+//
+//     try {
+//       showDialog(
+//         context: context,
+//         builder: (BuildContext context) {
+//           dialogContext = context;
+//           return SizedBox(
+//             height: 30,
+//             child: Lottie.asset('assets/images/loading.json', repeat: true),
+//           );
+//         },
+//       );
+//
+//       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+//       if (googleUser == null) {
+//         Navigator.pop(dialogContext!);
+//         return;
+//       }
+//
+//       final GoogleSignInAuthentication googleAuth =
+//           await googleUser.authentication;
+//       final AuthCredential credential = GoogleAuthProvider.credential(
+//         accessToken: googleAuth.accessToken,
+//         idToken: googleAuth.idToken,
+//       );
+//
+//       UserCredential userCredential =
+//           await FirebaseAuth.instance.signInWithCredential(credential);
+//       User? userData = userCredential.user;
+//
+//       if (userData != null) {
+//         SharedPreferences prefs = await SharedPreferences.getInstance();
+//         prefs.setBool("loggedIn", true);
+//
+//         String userRole = await fetchUserRoleFromBackend(userData.uid);
+//
+//         Navigator.pop(dialogContext!);
+// // Get FCM token
+//         String? fcmToken = await FirebaseMessaging.instance.getToken();
+//
+//         if (userRole == "admin" || userRole.isEmpty) {
+//           // Store FCM token in Firestore
+//           await FirebaseFirestore.instance
+//               .collection('users')
+//               .doc(userData.uid)
+//               .set({
+//             'name':userData.displayName,
+//             'email':userData.email,
+//             'id':userData.uid,
+//             'role':'admin',
+//             'fcmToken': fcmToken,
+//           });
+//           // User is an admin, navigate to admin home page
+//           Navigator.pushAndRemoveUntil(
+//             context,
+//             CupertinoPageRoute(builder: (context) => const MyHomePageAdmin()),
+//             (route) => false,
+//           );
+//         } else {
+//           // User is not an admin, show Cupertino dialog
+//           await showCupertinoDialog(
+//             context: context,
+//             builder: (context) {
+//               return CupertinoAlertDialog(
+//                 title: Text('Login as a Client'),
+//                 actions: [
+//                   CupertinoDialogAction(
+//                     child: const Text("OK"),
+//                     onPressed: () {
+//                       Navigator.of(context).pop();
+//                     },
+//                   ),
+//                 ],
+//               );
+//             },
+//           );
+//         }
+//       }
+//     } catch (e) {
+//       print(e.toString());
+//     }
+//   }
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
+  Future<String> fetchUserRoleFromBackend(String uid) async {
+    try {
+      CollectionReference users =
+          FirebaseFirestore.instance.collection('users');
 
-      UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithCredential(credential);
-      User? userData = userCredential.user;
+      DocumentSnapshot userSnapshot = await users.doc(uid).get();
 
-      if (userData != null) {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        prefs.setBool("loggedIn", true);
+      // Check if the user exists
+      if (userSnapshot.exists) {
+        // Retrieve the 'role' field from the user document
+        String userRole = userSnapshot['role'];
 
-        String userRole = await fetchUserRoleFromBackend(userData.uid);
-
-        Navigator.pop(dialogContext!);
-
-        if (userRole == "client" || userRole.isEmpty) {
-          // Get FCM token
-          String? fcmToken = await FirebaseMessaging.instance.getToken();
-
-          // Store FCM token in Firestore
-          await FirebaseFirestore.instance
-              .collection('users')
-              .doc(userData.uid)
-              .set({
-            'name': userData.displayName,
-            'email': userData.email,
-            'id': userData.uid,
-            'role': 'client',
-            'fcmToken': fcmToken,
-          });
-
-          // User is an admin, navigate to admin home page
-          Navigator.pushAndRemoveUntil(
-            context,
-            CupertinoPageRoute(builder: (context) => const MyHomePage()),
-            (route) => false,
-          );
-        } else {
-          // User is not an admin, show Cupertino dialog
-          await showCupertinoDialog(
-            context: context,
-            builder: (context) {
-              return CupertinoAlertDialog(
-                title: Text('Login as an Admin'),
-                actions: [
-                  CupertinoDialogAction(
-                    child: const Text("OK"),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              );
-            },
-          );
-        }
+        // Return the user role
+        return userRole;
+      } else {
+        // User document not found
+        print("User document not found for UID: $uid");
+        return "client"; // Default role for non-existent user (replace with appropriate default)
       }
     } catch (e) {
-      print(e.toString());
+      print("Error fetching user role: $e");
+      return "client"; // Default role in case of an error (replace with appropriate default)
     }
   }
 
@@ -486,24 +522,6 @@ class _LoginPageState extends State<LoginPage> {
       }
     } catch (e) {
       print(e.toString());
-    }
-  }
-
-  Future<String> fetchUserRoleFromBackend(String uid) async {
-    try {
-      CollectionReference users =
-          FirebaseFirestore.instance.collection('users');
-      DocumentSnapshot userSnapshot = await users.doc(uid).get();
-      if (userSnapshot.exists) {
-        String userRole = userSnapshot['role'];
-        return userRole;
-      } else {
-        print("User document not found for UID: $uid");
-        return "client"; // Default role for non-existent user (replace with appropriate default)
-      }
-    } catch (e) {
-      print("Error fetching user role: $e");
-      return "client"; // Default role in case of an error (replace with appropriate default)
     }
   }
 }

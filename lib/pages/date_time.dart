@@ -1,11 +1,13 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-import 'home.dart';
+import 'confirm_details.dart';
 
 class DateAndTime extends StatefulWidget {
-  const DateAndTime({Key? key, required this.selectedRoomsData}) : super(key: key);
+  const DateAndTime({Key? key, required this.selectedRoomsData, required this.serviceName}) : super(key: key);
   final List<Map<String, dynamic>> selectedRoomsData;
+  final String serviceName;
 
   @override
   State<DateAndTime> createState() => _DateAndTimeState();
@@ -67,10 +69,26 @@ class _DateAndTimeState extends State<DateAndTime> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           print(widget.selectedRoomsData);
+          List<Map<String, dynamic>> selectedExtraServices = _selectedExtraCleaning
+              .map((index) => {
+            'name': _extraCleaning[index][0],
+            'price': _extraCleaning[index][2],
+          })
+              .toList();
+
+          print(selectedExtraServices);
+          print(formattedDate);
+          print(_selectedDay);
+          print(now);
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => const HomePage(),
+            CupertinoPageRoute(
+              builder: (context) => ConfirmDetails(
+                serviceName: widget.serviceName,
+                repeat:_repeat[_selectedRepeat],
+                rooms: widget.selectedRoomsData,
+                selectedExtraServices: selectedExtraServices, day: _selectedDay, month: formattedDate, time: now,selTime: _selectedHour,
+              ),
             ),
           );
         },
@@ -134,6 +152,7 @@ class _DateAndTimeState extends State<DateAndTime> {
                         if (_days[index][0] >= DateTime.now().day) {
                           setState(() {
                             _selectedDay = _days[index][0];
+                            print(_selectedDay);
                           });
                         } else {
                         }

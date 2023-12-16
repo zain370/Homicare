@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:homicare/pages/login_page.dart';
+import 'package:homicare/pages/sign_up_page.dart';
 import '../models/service.dart';
 
 class StartPage extends StatefulWidget {
@@ -13,7 +15,7 @@ class StartPage extends StatefulWidget {
 
 class _StartPageState extends State<StartPage> {
   List<Services> services = [
-    Services('Cleaning', 'assets/images/clean.png'),
+    Services('Cleaning', 'assets/images/cleaning.png'),
     Services('Plumber', 'assets/images/plumber.png'),
     Services('Electrician', 'assets/images/electrician.png'),
     Services('Painter', 'assets/images/painter.png'),
@@ -106,7 +108,7 @@ class _StartPageState extends State<StartPage> {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
+                            CupertinoPageRoute(
                               builder: (context) => const LoginPage(),
                             ),
                           );
@@ -120,9 +122,42 @@ class _StartPageState extends State<StartPage> {
                         child: const Padding(
                           padding: EdgeInsets.symmetric(vertical: 15),
                           child: Text(
-                            'Get Started',
+                            'L O G I N',
                             style: TextStyle(
                               color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width* .9,
+                    child: Padding(
+                      padding: const EdgeInsets.only(left:20.0,right: 20,top: 5,bottom: 20),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            CupertinoPageRoute(
+                              builder: (context) => const SignupPage(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white70,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 15),
+                          child: Text(
+                            'S I G N U P',
+                            style: TextStyle(
+                              color: Colors.black,
                               fontSize: 20,
                               fontWeight: FontWeight.w500,
                             ),

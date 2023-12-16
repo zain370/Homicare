@@ -1,30 +1,39 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:homicare/pages/admin/signup_admin.dart';
-import 'package:homicare/pages/verify_email.dart';
+import 'package:homicare/pages/sign_up_page.dart';
 import 'package:lottie/lottie.dart';
+import '../verify_email.dart';
 
-class SignupPage extends StatefulWidget {
-  const SignupPage({Key? key}) : super(key: key);
+class SignupAdmin extends StatefulWidget {
+  const SignupAdmin({super.key});
 
   @override
-  State<SignupPage> createState() => _SignupPageState();
+  State<SignupAdmin> createState() => _SignupAdminState();
 }
 
-class _SignupPageState extends State<SignupPage> {
+class _SignupAdminState extends State<SignupAdmin> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   TextEditingController nameController = TextEditingController();
+
   TextEditingController numController = TextEditingController();
+
   TextEditingController emailController = TextEditingController();
+
   TextEditingController passController = TextEditingController();
-  List<String> list = ["Plumber"];
+
   bool userPassWrong = false;
+
   bool obscureText = true;
+
+  String selectOption = 'Plumber';
+
   bool userEmailWrong = false;
+
   bool userNameWrong = false;
+
   bool tickMark = false;
 
   @override
@@ -33,7 +42,13 @@ class _SignupPageState extends State<SignupPage> {
     var mediaQuerySize = MediaQuery.of(context).size;
 
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        centerTitle: true,
+        title: const Text(
+          "Service Provider",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
       body: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -58,7 +73,7 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                     ),
                   ]),
-                  SizedBox(height: mediaQuery.size.width * 0.06),
+                  SizedBox(height: mediaQuery.size.width * 0.03),
                   SizedBox(
                     width: mediaQuery.size.width * 0.9,
                     child: SizedBox(
@@ -89,7 +104,7 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: mediaQuery.size.width * 0.04),
+                  SizedBox(height: mediaQuery.size.width * 0.03),
                   SizedBox(
                     width: mediaQuery.size.width * 0.9,
                     child: SizedBox(
@@ -97,7 +112,8 @@ class _SignupPageState extends State<SignupPage> {
                       child: TextFormField(
                         controller: emailController,
                         validator: (value) {
-                          if (value!.trim().isEmpty || !value.trim().contains('@')) {
+                          if (value!.trim().isEmpty ||
+                              !value.trim().contains('@')) {
                             return 'Please enter a valid email address';
                           }
                           return null;
@@ -120,7 +136,7 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: mediaQuery.size.width * 0.04),
+                  SizedBox(height: mediaQuery.size.width * 0.03),
                   SizedBox(
                     width: mediaQuery.size.width * 0.9,
                     child: SizedBox(
@@ -165,7 +181,7 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: mediaQuery.size.width * 0.04),
+                  SizedBox(height: mediaQuery.size.width * 0.03),
                   SizedBox(
                     width: mediaQuery.size.width * 0.9,
                     child: SizedBox(
@@ -198,7 +214,43 @@ class _SignupPageState extends State<SignupPage> {
                       ),
                     ),
                   ),
-                  SizedBox(height: mediaQuery.size.width * 0.07),
+                  Row(
+                      children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 25),
+                      child: SizedBox(
+                          width: mediaQuery.size.width * 0.85,
+                          height: 55,
+                          child: DropdownButton<String>(
+                            value: selectOption,
+                            icon: const Icon(Icons.arrow_downward),
+                            iconSize: 24,
+                            elevation: 16,
+                            style: const TextStyle(color: Colors.deepPurple),
+                            onChanged: (String? newValue) {
+                              setState(() {
+                                selectOption = newValue!;
+                              });
+                            },
+                            items: <String>[
+                              'Plumber',
+                              'Cleaning',
+                              'Electrician',
+                              'Painter',
+                              'Maid'
+                            ].map<DropdownMenuItem<String>>((String value) {
+                              return DropdownMenuItem<String>(
+                                value: value,
+                                child: Text(
+                                  value,
+                                  style: const TextStyle(color: Colors.black,fontWeight: FontWeight.bold),
+                                ),
+                              );
+                            }).toList(),
+                          )),
+                    ),
+                  ]),
+                  SizedBox(height: mediaQuery.size.width * 0.06),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -211,7 +263,7 @@ class _SignupPageState extends State<SignupPage> {
                         child: tickMark
                             ? const Icon(CupertinoIcons.check_mark)
                             : const Icon(CupertinoIcons.square,
-                            color: CupertinoColors.inactiveGray),
+                                color: CupertinoColors.inactiveGray),
                       ),
                       const Text(" I've read and agree to "),
                       const Text(
@@ -232,8 +284,8 @@ class _SignupPageState extends State<SignupPage> {
                             context: context,
                             builder: (context) {
                               return CupertinoAlertDialog(
-                                title: const Text(
-                                    "Agree to Terms and Conditions"),
+                                title:
+                                    const Text("Agree to Terms and Conditions"),
                                 actions: [
                                   CupertinoDialogAction(
                                     child: const Text("OK"),
@@ -288,12 +340,12 @@ class _SignupPageState extends State<SignupPage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("New as Service Provider? "),
+                      const Text("Create Account as Client? "),
                       GestureDetector(
                         onTap: () {
                           Navigator.of(context).push(
                             CupertinoPageRoute(
-                              builder: (context) => const SignupAdmin(),
+                              builder: (context) => const SignupPage(),
                             ),
                           );
                         },
@@ -322,7 +374,7 @@ class _SignupPageState extends State<SignupPage> {
       context: context,
       barrierDismissible: false, // Prevent dialog from being dismissed
       builder: (context) {
-       return SizedBox(
+        return SizedBox(
           height: 30,
           child: Lottie.asset('assets/images/loading.json', repeat: true),
         );
@@ -331,7 +383,7 @@ class _SignupPageState extends State<SignupPage> {
 
     try {
       final UserCredential userCredential =
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passController.text.trim(),
       );
@@ -358,8 +410,9 @@ class _SignupPageState extends State<SignupPage> {
         );
       }
     } catch (error) {
-      String newError =
-      error.toString().replaceAll('[firebase_auth/email-already-in-use]', '');
+      String newError = error
+          .toString()
+          .replaceAll('[firebase_auth/email-already-in-use]', '');
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         duration: const Duration(seconds: 2),
@@ -375,25 +428,24 @@ class _SignupPageState extends State<SignupPage> {
   Future<void> storeUserDataInBackend() async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
     User? user = FirebaseAuth.instance.currentUser;
-    try
-        {
-          if (user != null) {
-            DatabaseReference userRef =
-            FirebaseDatabase.instance.ref().child("users").child(user.uid);
-            Map<String, dynamic> userDataMap = {
-              "id": user.uid,
-              "name": nameController.text.trim(),
-              "phone":numController.text.trim(),
-              "email": emailController.text.trim(),
-              "password": passController.text.trim(),
-              "role":"client"
-            };
-            print('User data stored in Firestore');
-            await firestore.collection('users').doc(user.uid).set(userDataMap);
-          }
-        }
-        catch(e)
-    {
+
+    try {
+      if (user != null) {
+        Map<String, dynamic> userDataMap = {
+          "id": user.uid,
+          "name": nameController.text.trim(),
+          "service" : selectOption,
+          "phone": numController.text.trim(),
+          "email": emailController.text.trim(),
+          "password": passController.text.trim(),
+          "role": "admin",
+        };
+
+        await firestore.collection('users').doc(user.uid).set(userDataMap);
+
+        print('User data stored in Firestore');
+      }
+    } catch (e) {
       print(e.toString());
     }
   }
