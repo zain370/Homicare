@@ -1,6 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -306,7 +305,7 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: emailController.text.trim(),
         password: passController.text.trim(),
       );
@@ -317,6 +316,9 @@ class _LoginPageState extends State<LoginPage> {
       if (userData != null) {
         // Check if the user's email is verified
         if (userData.emailVerified) {
+          // Fetch user role based on uid
+          String userUid = userData.uid;
+          String userRole = await fetchUserRoleFromBackend(userUid);
           // Get FCM token
           String? fcmToken = await FirebaseMessaging.instance.getToken();
 
@@ -328,20 +330,16 @@ class _LoginPageState extends State<LoginPage> {
             'fcmToken': fcmToken,
           });
 
-          // Continue with the rest of your login logic...
-
-          String userUid = userData.uid;
-          String userRole = await fetchUserRoleFromBackend(userUid);
-
           Navigator.pop(dialogContext!);
 
           if (userRole == "client") {
             // User is an admin, navigate to home page
             prefs.setBool("loggedIn", true);
+            prefs.setBool("isAdmin", false);
             Navigator.pushAndRemoveUntil(
               context,
               CupertinoPageRoute(builder: (context) => const MyHomePage()),
-              (route) => false,
+                  (route) => false,
             );
           } else {
             // User is not an admin, show Cupertino dialog
@@ -349,7 +347,7 @@ class _LoginPageState extends State<LoginPage> {
               context: context,
               builder: (context) {
                 return CupertinoAlertDialog(
-                  title: const Text('Login as an Admin!'),
+                  title: const Text('Login as an admin'),
                   actions: [
                     CupertinoDialogAction(
                       child: const Text("OK"),
@@ -373,11 +371,42 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pop(context);
         }
       }
-    } catch (e) {
-      // Handle exceptions
-      print('Error logging in: $e');
+    } on FirebaseAuthException catch (e) {
+      // Handle FirebaseAuthException
+      print(e.toString());
+      Navigator.pop(dialogContext!); // Dismiss the dialog
+      String errorMessage = "An undefined error occurred";
+      if (e.code == 'user-disabled') {
+        errorMessage = 'User has been disabled';
+      } else if (e.code == 'too-many-requests') {
+        errorMessage =
+        'Too many unsuccessful login attempts. Please try again later.';
+      } else if (e.code == 'INVALID_LOGIN_CREDENTIALS') {
+        errorMessage = 'Invalid email or password';
+      } else {
+        print('here is error');
+        print(e);
+        errorMessage = 'Invalid email or password';
+      }
+      await showCupertinoDialog(
+        context: context,
+        builder: (context) {
+          return CupertinoAlertDialog(
+            title: Text(errorMessage),
+            actions: [
+              CupertinoDialogAction(
+                child: const Text("OK"),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
     }
   }
+
 
   // Function to sign in with Google
   Future<void> signInWithGoogle() async {
@@ -415,6 +444,7 @@ class _LoginPageState extends State<LoginPage> {
       if (userData != null) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         prefs.setBool("loggedIn", true);
+        prefs.setBool('isAdmin', false);
 
         String userRole = await fetchUserRoleFromBackend(userData.uid);
 
@@ -461,28 +491,6 @@ class _LoginPageState extends State<LoginPage> {
             },
           );
         }
-      }
-    } catch (e) {
-      print(e.toString());
-    }
-  }
-
-  Future<void> storeUserDataInBackend(String role) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    User? user = FirebaseAuth.instance.currentUser;
-    try {
-      if (user != null) {
-        DatabaseReference userRef =
-            FirebaseDatabase.instance.ref().child("users").child(user.uid);
-        Map<String, dynamic> userDataMap = {
-          "id": user.uid,
-          "name": user.displayName ?? '',
-          "email": user.email ?? '',
-          "role": role,
-        };
-
-        print('User data stored in Firestore');
-        await firestore.collection('users').doc(user.uid).set(userDataMap);
       }
     } catch (e) {
       print(e.toString());

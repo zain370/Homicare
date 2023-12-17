@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:homicare/pages/cleaning.dart';
 import 'package:homicare/pages/select_service.dart';
 import 'package:homicare/pages/start.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../models/recent_service_provider.dart';
 import '../models/service.dart';
 import 'full_picture.dart';
 
@@ -18,6 +20,54 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String? userName = '';
   String? photoUrl = '';
+  String? userId = '';
+  List<RecentServiceProvider> model = [];
+
+  Future<void> fetchMostRecentCompletedServiceProvider() async {
+    try {
+      CollectionReference requestsCollection =
+          FirebaseFirestore.instance.collection('requests');
+      User? user = FirebaseAuth.instance.currentUser;
+      String? clientId = user?.uid;
+
+      QuerySnapshot querySnapshot = await requestsCollection
+          .where('userId', isEqualTo: clientId)
+          .where('completeTime', isNotEqualTo: '')
+          .orderBy('completeTime', descending: true)
+          .limit(1)
+          .get();
+
+      // Extract the data from the query result
+      if (querySnapshot.docs.isNotEmpty) {
+        Map<String, dynamic>? mostRecentRequestData =
+            querySnapshot.docs.first.data() as Map<String, dynamic>?;
+
+        setState(() {
+          if (mostRecentRequestData != null &&
+              mostRecentRequestData.containsKey('serviceProviderName') &&
+              mostRecentRequestData.containsKey('serviceProviderPhone') &&
+              mostRecentRequestData.containsKey('serviceProviderService')) {
+            model.add(RecentServiceProvider(
+              serviceProviderName: mostRecentRequestData['serviceProviderName'],
+              serviceProviderPhone:
+                  mostRecentRequestData['serviceProviderPhone'],
+              serviceProviderService:
+                  mostRecentRequestData['serviceProviderService'],
+            ));
+          } else {
+            print('Required fields are missing in the document.');
+            return;
+          }
+        });
+      } else {
+        print('No documents found for the specified clientId.');
+        return;
+      }
+    } catch (e) {
+      print('Error fetching most recent completed service provider: $e');
+      return;
+    }
+  }
 
   Future<void> logoutUser(BuildContext context) async {
     bool confirmLogout = await showDialog(
@@ -97,6 +147,7 @@ class _HomePageState extends State<HomePage> {
     // TODO: implement initState
     super.initState();
     fetchUserName();
+    fetchMostRecentCompletedServiceProvider();
   }
 
   @override
@@ -144,12 +195,12 @@ class _HomePageState extends State<HomePage> {
         ),
         body: SingleChildScrollView(
             child: Column(children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 20.0, top: 20.0, right: 10.0),
+          const Padding(
+            padding: EdgeInsets.only(left: 20.0, top: 20.0, right: 10.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   'Recent',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
@@ -189,9 +240,11 @@ class _HomePageState extends State<HomePage> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            "Isabel Kirkland",
-                            style: TextStyle(
+                          Text(
+                            model.isNotEmpty
+                                ? model.first.serviceProviderName
+                                : '',
+                            style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold),
@@ -200,8 +253,9 @@ class _HomePageState extends State<HomePage> {
                             height: 5,
                           ),
                           Text(
-                            "Cleaner",
-                            style: TextStyle(
+                            model.isNotEmpty
+                                ? model.first.serviceProviderService
+                                : '',                            style: TextStyle(
                                 color: Colors.black.withOpacity(0.7),
                                 fontSize: 18),
                           ),
@@ -357,9 +411,7 @@ class _HomePageState extends State<HomePage> {
           child: Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
             ClipRRect(
                 borderRadius: BorderRadius.circular(15.0),
-                child: image.isNotEmpty
-                    ? Image.network(image)
-                    : const CircleAvatar()),
+                child:const CircleAvatar()),
             const SizedBox(
               width: 20,
             ),
@@ -410,6 +462,7 @@ class _HomePageState extends State<HomePage> {
   Future fetchUserName() async {
     User? user = FirebaseAuth.instance.currentUser;
     userName = user?.displayName!;
+    userId = user?.uid;
     photoUrl = user?.photoURL!;
   }
 }

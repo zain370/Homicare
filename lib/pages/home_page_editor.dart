@@ -51,7 +51,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             BottomNavigationBarItem(
               label: 'Services',
-              icon: Icon(Icons.design_services_sharp),
+              icon: Icon(Icons.book_outlined),
             ),
             BottomNavigationBarItem(
               label: 'In Progress',

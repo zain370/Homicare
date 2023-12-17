@@ -372,7 +372,9 @@ class _LoginPageState extends State<LoginAdmin> {
       } else if (e.code == 'INVALID_LOGIN_CREDENTIALS') {
         errorMessage = 'Invalid email or password';
       } else {
-        errorMessage = 'User not Registered';
+        print('here is error');
+        print(e);
+        errorMessage = 'Invalid email or password';
       }
       await showCupertinoDialog(
         context: context,
@@ -392,91 +394,6 @@ class _LoginPageState extends State<LoginAdmin> {
       );
     }
   }
-
-//   Future<void> signInWithGoogle() async {
-//     BuildContext? dialogContext;
-//
-//     try {
-//       showDialog(
-//         context: context,
-//         builder: (BuildContext context) {
-//           dialogContext = context;
-//           return SizedBox(
-//             height: 30,
-//             child: Lottie.asset('assets/images/loading.json', repeat: true),
-//           );
-//         },
-//       );
-//
-//       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-//       if (googleUser == null) {
-//         Navigator.pop(dialogContext!);
-//         return;
-//       }
-//
-//       final GoogleSignInAuthentication googleAuth =
-//           await googleUser.authentication;
-//       final AuthCredential credential = GoogleAuthProvider.credential(
-//         accessToken: googleAuth.accessToken,
-//         idToken: googleAuth.idToken,
-//       );
-//
-//       UserCredential userCredential =
-//           await FirebaseAuth.instance.signInWithCredential(credential);
-//       User? userData = userCredential.user;
-//
-//       if (userData != null) {
-//         SharedPreferences prefs = await SharedPreferences.getInstance();
-//         prefs.setBool("loggedIn", true);
-//
-//         String userRole = await fetchUserRoleFromBackend(userData.uid);
-//
-//         Navigator.pop(dialogContext!);
-// // Get FCM token
-//         String? fcmToken = await FirebaseMessaging.instance.getToken();
-//
-//         if (userRole == "admin" || userRole.isEmpty) {
-//           // Store FCM token in Firestore
-//           await FirebaseFirestore.instance
-//               .collection('users')
-//               .doc(userData.uid)
-//               .set({
-//             'name':userData.displayName,
-//             'email':userData.email,
-//             'id':userData.uid,
-//             'role':'admin',
-//             'fcmToken': fcmToken,
-//           });
-//           // User is an admin, navigate to admin home page
-//           Navigator.pushAndRemoveUntil(
-//             context,
-//             CupertinoPageRoute(builder: (context) => const MyHomePageAdmin()),
-//             (route) => false,
-//           );
-//         } else {
-//           // User is not an admin, show Cupertino dialog
-//           await showCupertinoDialog(
-//             context: context,
-//             builder: (context) {
-//               return CupertinoAlertDialog(
-//                 title: Text('Login as a Client'),
-//                 actions: [
-//                   CupertinoDialogAction(
-//                     child: const Text("OK"),
-//                     onPressed: () {
-//                       Navigator.of(context).pop();
-//                     },
-//                   ),
-//                 ],
-//               );
-//             },
-//           );
-//         }
-//       }
-//     } catch (e) {
-//       print(e.toString());
-//     }
-//   }
 
   Future<String> fetchUserRoleFromBackend(String uid) async {
     try {

@@ -15,14 +15,21 @@ void main() async {
   try {
     await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform); // Initialize Firebase
     await FirebaseApi().initNotifications();
-    runApp(const MyApp());
+
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isLoggedIn = prefs.getBool("loggedIn") ?? false;
+    bool isAdmin = prefs.getBool("isAdmin") ?? false;
+
+    runApp(MyApp(isLoggedIn: isLoggedIn, isAdmin: isAdmin));
   } catch (e) {
     print('Error initializing Firebase: $e');
   }
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool isLoggedIn;
+  final bool isAdmin;
+  const MyApp({required this.isLoggedIn, required this.isAdmin, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +48,7 @@ class MyApp extends StatelessWidget {
             );
           } else {
             return FutureBuilder(
-              future: checkRoleStatus(),
+              future: checkLoginStatus(),
               builder: (context, roleSnapshot) {
                 if (roleSnapshot.connectionState == ConnectionState.waiting) {
                   return Container(
@@ -52,9 +59,6 @@ class MyApp extends StatelessWidget {
                   child: Lottie.asset('assets/images/loading.json', repeat: true),
                   );
                 } else {
-                  bool isLoggedIn = loginSnapshot.data as bool;
-                  bool isAdmin = roleSnapshot.data as bool;
-
                   if (isLoggedIn) {
                     if (isAdmin) {
                       return const MyHomePageAdmin();
@@ -78,11 +82,5 @@ class MyApp extends StatelessWidget {
     await Future.delayed(const Duration(seconds: 1)); // Simulate asynchronous operation
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getBool("loggedIn") ?? false;
-  }
-
-  Future<bool> checkRoleStatus() async {
-    await Future.delayed(const Duration(seconds: 1)); // Simulate asynchronous operation
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool("isAdmin") ?? false;
   }
 }

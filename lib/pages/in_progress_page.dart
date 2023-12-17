@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:homicare/models/in_progress_request.dart';
 import 'package:lottie/lottie.dart';
 import '../models/request.dart';
 
@@ -12,7 +13,7 @@ class InProgressPage extends StatefulWidget {
 }
 
 class _InProgressPageState extends State<InProgressPage> {
-  late List<RequestModel> requests = [];
+  late List<InProgressModel> requests = [];
   late String currentUserId;
   bool isLoading = true;
 
@@ -41,7 +42,7 @@ class _InProgressPageState extends State<InProgressPage> {
             .where((doc) =>
                 doc['userId'] == currentUserId && doc['status'] == 'inprogress')
             .map((doc) {
-          return RequestModel(
+          return InProgressModel(
             status: doc['status'],
             repeat: doc['repeat'],
             time: doc['time'],
@@ -52,6 +53,9 @@ class _InProgressPageState extends State<InProgressPage> {
             month: doc['month'],
             rooms: doc['rooms'],
             requestId: doc['requestId'],
+            serviceProviderName: doc['serviceProviderName'],
+            serviceProviderPhone: doc['serviceProviderPhone'],
+            serviceProviderService: doc['serviceProviderService'],
           );
         }).toList();
         isLoading = false;
@@ -232,37 +236,73 @@ class _InProgressPageState extends State<InProgressPage> {
                                               ],
                                             ),
                                           ),
+                                          SizedBox(
+                                              width: MediaQuery.of(context).size.width -50,
+                                              child: const Divider()),
+                                          //service provider details
+
+                                          RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                const TextSpan(
+                                                  text: 'Name: ',
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                TextSpan(
+                                                  text: request.serviceProviderName,
+                                                  style: DefaultTextStyle.of(
+                                                          context)
+                                                      .style,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                const TextSpan(
+                                                  text: 'Phone: ',
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                TextSpan(
+                                                  text: request.serviceProviderPhone,
+                                                  style: DefaultTextStyle.of(
+                                                          context)
+                                                      .style,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          RichText(
+                                            text: TextSpan(
+                                              children: [
+                                                const TextSpan(
+                                                  text: 'Speciality: ',
+                                                  style: TextStyle(
+                                                    color: Colors.black,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                                TextSpan(
+                                                  text: request.serviceProviderService,
+                                                  style: DefaultTextStyle.of(
+                                                      context)
+                                                      .style,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
                                           const SizedBox(height: 10.0),
                                           Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.end,
                                             children: [
-                                              ElevatedButton(
-                                                onPressed: () {
-                                                },
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.white,
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            10),
-                                                  ),
-                                                ),
-                                                child: const Text(
-                                                  'Details',
-                                                  style: TextStyle(
-                                                    color: Colors.black,
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ),
-                                              SizedBox(
-                                                width: MediaQuery.of(context)
-                                                        .size
-                                                        .width *
-                                                    .02,
-                                              ),
                                               ElevatedButton(
                                                 onPressed: () {},
                                                 style: ElevatedButton.styleFrom(

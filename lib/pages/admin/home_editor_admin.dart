@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:homicare/pages/admin/completed_admin.dart';
 import 'package:homicare/pages/admin/in_progress_admin.dart';
+import 'package:homicare/pages/admin/profile_admin_detail.dart';
 import 'home_services_admin.dart';
 
 class MyHomePageAdmin extends StatefulWidget {
@@ -17,6 +18,7 @@ class _MyHomePageState extends State<MyHomePageAdmin> {
     const HomePageAdmin(),
     const InProgressAdmin(),
     const CompletedAdmin(),
+    const ProfileAdmin()
   ];
 
   @override
@@ -52,6 +54,9 @@ class _MyHomePageState extends State<MyHomePageAdmin> {
           BottomNavigationBarItem(
             label: 'Completed',
             icon: Icon(Icons.notes),
+          ),BottomNavigationBarItem(
+            label: 'Profile',
+            icon: Icon(Icons.person),
           ),
         ],
       ),

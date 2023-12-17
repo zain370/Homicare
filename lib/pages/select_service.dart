@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../models/service.dart';
 import 'cleaning.dart';
@@ -30,7 +31,7 @@ class _SelectServiceState extends State<SelectService> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
+                  CupertinoPageRoute(
                     builder: (context) => CleaningPage(
                       serviceName: services[selectedService].name,
                     ),
