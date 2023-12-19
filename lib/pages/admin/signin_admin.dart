@@ -1,17 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:homicare/pages/admin/home_services_admin.dart';
 import 'package:homicare/pages/admin/home_editor_admin.dart';
-import 'package:homicare/pages/admin/signin_admin.dart';
-import 'package:homicare/pages/login_page.dart';
 import 'package:homicare/pages/reset.dart';
-import 'package:homicare/pages/home.dart';
-import 'package:homicare/pages/sign_up_page.dart';
 import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -201,7 +195,7 @@ class _LoginPageState extends State<LoginAdmin> {
                   ),
                 ),
                 SizedBox(
-                  height: mediaQuerySize.height * 0.09,
+                  height: mediaQuerySize.height * 0.035,
                 ),
                 InkWell(
                   onTap: () {
@@ -242,32 +236,32 @@ class _LoginPageState extends State<LoginAdmin> {
                     ),
                   ),
                 ),
-                // SizedBox(height: mediaQuerySize.width * 0.035),
-                // Column(children: [
-                //   Padding(
-                //     padding: const EdgeInsets.symmetric(horizontal: 10),
-                //     child: InkWell(
-                //       onTap: () {
-                //         signInWithGoogle();
-                //       },
-                //       child: SizedBox(
-                //         height: mediaQuerySize.width * 0.12,
-                //         width: 50,
-                //         child: SizedBox.square(
-                //           child: Image.asset(
-                //             'assets/images/google.png',
-                //             // Replace with the path to your Google icon
-                //             height: 30,
-                //             width: 30,
-                //           ),
-                //         ),
-                //       ),
-                //     ),
-                //   ),
-                //   SizedBox(
-                //     height: mediaQuerySize.height * .014,
-                //   ),
-                // ]),
+                SizedBox(height: mediaQuerySize.width * 0.035),
+                Column(children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: InkWell(
+                      onTap: () {
+                        signInWithGoogle();
+                      },
+                      child: SizedBox(
+                        height: mediaQuerySize.width * 0.12,
+                        width: 50,
+                        child: SizedBox.square(
+                          child: Image.asset(
+                            'assets/images/google.png',
+                            // Replace with the path to your Google icon
+                            height: 30,
+                            width: 30,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: mediaQuerySize.height * .014,
+                  ),
+                ]),
               ],
             ),
           ],
@@ -395,6 +389,97 @@ class _LoginPageState extends State<LoginAdmin> {
     }
   }
 
+
+  // Function to sign in with Google
+  Future<void> signInWithGoogle() async {
+    BuildContext? dialogContext;
+
+    try {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          dialogContext = context;
+          return SizedBox(
+            height: 30,
+            child: Lottie.asset('assets/images/loading.json', repeat: true),
+          );
+        },
+      );
+
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        Navigator.pop(dialogContext!);
+        return;
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+      await googleUser.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      UserCredential userCredential =
+      await FirebaseAuth.instance.signInWithCredential(credential);
+      User? userData = userCredential.user;
+
+      if (userData != null) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setBool("loggedIn", true);
+        prefs.setBool('isAdmin', true);
+
+        String userRole = await fetchUserRoleFromBackend(userData.uid);
+
+        Navigator.pop(dialogContext!);
+
+        if (userRole == "admin" || userRole.isEmpty) {
+          // Get FCM token
+          String? fcmToken = await FirebaseMessaging.instance.getToken();
+
+          // Store FCM token in Firestore
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userData.uid)
+              .set({
+            'name': userData.displayName,
+            'email': userData.email,
+            'id': userData.uid,
+            'role': 'admin',
+            'fcmToken': fcmToken,
+          },SetOptions(merge: true));
+
+          // User is an admin, navigate to admin home page
+          Navigator.pushAndRemoveUntil(
+            context,
+            CupertinoPageRoute(builder: (context) => const MyHomePageAdmin()),
+                (route) => false,
+          );
+        } else {
+          // User is not an admin, show Cupertino dialog
+          await showCupertinoDialog(
+            context: context,
+            builder: (context) {
+              return CupertinoAlertDialog(
+                title: const Text('Login as a Client'),
+                actions: [
+                  CupertinoDialogAction(
+                    child: const Text("OK"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      }
+    } catch (e) {
+      print(e.toString());
+    }
+  }
+
+
   Future<String> fetchUserRoleFromBackend(String uid) async {
     try {
       CollectionReference users =
@@ -417,28 +502,6 @@ class _LoginPageState extends State<LoginAdmin> {
     } catch (e) {
       print("Error fetching user role: $e");
       return "client"; // Default role in case of an error (replace with appropriate default)
-    }
-  }
-
-  Future<void> storeUserDataInBackend(String role) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    User? user = FirebaseAuth.instance.currentUser;
-    try {
-      if (user != null) {
-        DatabaseReference userRef =
-            FirebaseDatabase.instance.ref().child("users").child(user.uid);
-        Map<String, dynamic> userDataMap = {
-          "id": user.uid,
-          "name": user.displayName ?? '',
-          "email": user.email ?? '',
-          "role": role,
-        };
-
-        print('User data stored in Firestore');
-        await firestore.collection('users').doc(user.uid).set(userDataMap);
-      }
-    } catch (e) {
-      print(e.toString());
     }
   }
 }

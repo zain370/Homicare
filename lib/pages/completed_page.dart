@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:homicare/models/completed_request.dart';
 import 'package:homicare/pages/review_page_client.dart';
 import 'package:homicare/pages/view_review_client.dart';
-import 'package:line_icons/line_icons.dart';
 import 'package:lottie/lottie.dart';
 
 class CompletedPage extends StatefulWidget {
@@ -73,7 +72,6 @@ class _InProgressPageState extends State<CompletedPage> {
       isLoading = false;
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -151,7 +149,8 @@ class _InProgressPageState extends State<CompletedPage> {
                                                 ],
                                               ),
                                             ),
-                                            Row(children: [
+                                            Row(
+                                                children: [
                                               Text(
                                                 "${requests[index].rating} ",
                                                 style: const TextStyle(
@@ -264,13 +263,14 @@ class _InProgressPageState extends State<CompletedPage> {
                                           ],
                                         ),
                                       ),
+
+                                      //service provider details
                                       SizedBox(
                                           width: MediaQuery.of(context)
                                                   .size
                                                   .width -
                                               50,
                                           child: const Divider()),
-                                      //service provider details
                                       RichText(
                                         text: TextSpan(
                                           children: [
@@ -362,7 +362,9 @@ class _InProgressPageState extends State<CompletedPage> {
                                                                               .requestId,
                                                                       clientName:
                                                                           requests[index]
-                                                                              .requestId, function: fetchData,
+                                                                              .requestId,
+                                                                      function:
+                                                                          fetchData,
                                                                     )));
                                                       }
                                                     },

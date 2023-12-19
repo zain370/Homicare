@@ -37,6 +37,15 @@ class _SignupAdminState extends State<SignupAdmin> {
   bool tickMark = false;
 
   @override
+  void dispose() {
+    nameController.dispose();
+    numController.dispose();
+    emailController.dispose();
+    passController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     var mediaQuerySize = MediaQuery.of(context).size;
@@ -435,6 +444,7 @@ class _SignupAdminState extends State<SignupAdmin> {
           "id": user.uid,
           "name": nameController.text.trim(),
           "service" : selectOption,
+          "averageRating":"0",
           "phone": numController.text.trim(),
           "email": emailController.text.trim(),
           "password": passController.text.trim(),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:homicare/pages/declined_services.dart';
 import 'completed_page.dart';
 import 'home.dart';
 import 'home_services.dart';
@@ -17,6 +18,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<Widget> _pages = const [
     HomePage(),
     HomeServices(),
+    DeclinedServices(),
     InProgressPage(),
     CompletedPage(),
   ];
@@ -52,6 +54,10 @@ class _MyHomePageState extends State<MyHomePage> {
             BottomNavigationBarItem(
               label: 'Services',
               icon: Icon(Icons.book_outlined),
+            ),
+            BottomNavigationBarItem(
+              label: 'Declined',
+              icon: Icon(Icons.cancel),
             ),
             BottomNavigationBarItem(
               label: 'In Progress',

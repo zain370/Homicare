@@ -8,17 +8,21 @@ import 'package:line_icons/line_icons.dart';
 import 'package:lottie/lottie.dart';
 import 'package:uuid/uuid.dart';
 
-class ConfirmDetails extends StatefulWidget {
+class ConfirmDetailsSpecial extends StatefulWidget {
   final String serviceName;
   final String month;
   final int day;
+  final String serviceProviderName;
+  final String serviceProviderId;
+  final String serviceProviderPhone;
+  final String serviceProviderService;
   final String selTime;
   final String repeat;
   final DateTime time;
   final List<Map<String, dynamic>> rooms;
   final List<Map<String, dynamic>> selectedExtraServices;
 
-  const ConfirmDetails({
+  const ConfirmDetailsSpecial({
     Key? key,
     required this.serviceName,
     required this.rooms,
@@ -28,13 +32,17 @@ class ConfirmDetails extends StatefulWidget {
     required this.time,
     required this.selTime,
     required this.repeat,
+    required this.serviceProviderName,
+    required this.serviceProviderPhone,
+    required this.serviceProviderService,
+    required this.serviceProviderId,
   }) : super(key: key);
 
   @override
-  State<ConfirmDetails> createState() => _ConfirmDetailsState();
+  State<ConfirmDetailsSpecial> createState() => _ConfirmDetailsState();
 }
 
-class _ConfirmDetailsState extends State<ConfirmDetails> {
+class _ConfirmDetailsState extends State<ConfirmDetailsSpecial> {
   List<Map<String, dynamic>> result = [];
 
   List<Map<String, dynamic>> removeNamePattern(
@@ -303,7 +311,8 @@ class _ConfirmDetailsState extends State<ConfirmDetails> {
     );
   }
 
-  void uploadRequest(BuildContext context, TextEditingController addressController) async {
+  void uploadRequest(
+      BuildContext context, TextEditingController addressController) async {
     BuildContext? dialogContext;
     DocumentReference? requestRef;
 
@@ -327,29 +336,30 @@ class _ConfirmDetailsState extends State<ConfirmDetails> {
       String requestId = const Uuid().v4();
 
       List<String> roomDescriptions =
-      widget.rooms.map((room) => room['name'].toString()).toList();
+          widget.rooms.map((room) => room['name'].toString()).toList();
       String roomsDescription = roomDescriptions.join(', ');
 
       List<String> extraServiceNames = widget.selectedExtraServices
           .map((extraService) => extraService['name'].toString())
           .toList();
-      String extraServicesDescription =
-      extraServiceNames.isNotEmpty ? extraServiceNames.join(', ') : 'No extra service';
+      String extraServicesDescription = extraServiceNames.isNotEmpty
+          ? extraServiceNames.join(', ')
+          : 'No extra service';
 
       await firestore.collection('requests').doc(requestId).set({
         'requestId': requestId, // Store the custom request ID
         'serviceName': widget.serviceName,
         'userName': user?.displayName,
         'userId': id,
-        'status': 'unknown',
         'reason':'',
-        'serviceProviderName':'',
-        'serviceProviderId':'',
+        'status': 'specialUnknown',
+        'serviceProviderName': widget.serviceProviderName,
+        'serviceProviderId': widget.serviceProviderId,
         'completeTime': '',
-        'serviceProviderPhone':'',
-        'serviceRating':'',
-        'clientComments':'',
-        'serviceProviderService':'',
+        'serviceProviderPhone': widget.serviceProviderPhone,
+        'serviceRating': '',
+        'clientComments': '',
+        'serviceProviderService': widget.serviceProviderService,
         'location': addressController.text.trim(),
         'rooms': roomsDescription,
         'selectedExtraServices': extraServicesDescription,
@@ -385,5 +395,4 @@ class _ConfirmDetailsState extends State<ConfirmDetails> {
       ));
     }
   }
-
 }

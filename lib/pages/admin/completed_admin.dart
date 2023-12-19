@@ -1,9 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:homicare/models/completed_request.dart';
+import 'package:homicare/pages/view_review_client.dart';
 import 'package:lottie/lottie.dart';
-import '../../models/request.dart';
 
 class CompletedAdmin extends StatefulWidget {
   const CompletedAdmin({super.key});
@@ -124,25 +125,43 @@ class _InProgressPageState extends State<CompletedAdmin> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      RichText(
-                                        text: TextSpan(
+                                      Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                           children: [
-                                            const TextSpan(
-                                              text: 'Service Name: ',
-                                              style: TextStyle(
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.bold,
+                                        RichText(
+                                          text: TextSpan(
+                                            children: [
+                                              const TextSpan(
+                                                text: 'Service Name: ',
+                                                style: TextStyle(
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
-                                            ),
-                                            TextSpan(
-                                              text: request.serviceName,
-                                              style:
-                                                  DefaultTextStyle.of(context)
-                                                      .style,
-                                            ),
-                                          ],
+                                              TextSpan(
+                                                text: request.serviceName,
+                                                style:
+                                                    DefaultTextStyle.of(context)
+                                                        .style,
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
+                                        Row(children: [
+                                          Text(
+                                            "${requests[index].rating} ",
+                                            style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          requests[index].rating.isNotEmpty
+                                              ? Icon(
+                                                  Icons.star,
+                                                  color: Colors.yellow.shade900,
+                                                )
+                                              : const Text(''),
+                                        ]),
+                                      ]),
                                       RichText(
                                         text: TextSpan(
                                           children: [
@@ -304,29 +323,71 @@ class _InProgressPageState extends State<CompletedAdmin> {
                                         ),
                                       ),
                                       const SizedBox(height: 10.0),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          ElevatedButton(
-                                            onPressed: () {},
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.black,
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10),
+                                      SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            requests[index].rating.isNotEmpty
+                                                ? ElevatedButton(
+                                                    onPressed: () {
+                                                      Navigator.push(
+                                                          context,
+                                                          CupertinoPageRoute(
+                                                              builder: (c) => ViewReviewPage(
+                                                                  rating: requests[
+                                                                          index]
+                                                                      .rating,
+                                                                  review: requests[
+                                                                          index]
+                                                                      .comments)));
+                                                    },
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          Colors.black,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(10),
+                                                      ),
+                                                    ),
+                                                    child: const Text(
+                                                      'View',
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  )
+                                                : const Text(' '),
+                                            const SizedBox(
+                                              width: 10,
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () {},
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.black,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(10),
+                                                ),
+                                              ),
+                                              child: const Text(
+                                                'Completed',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
                                               ),
                                             ),
-                                            child: const Text(
-                                              'Completed',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
                                     ],
                                   ),

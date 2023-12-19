@@ -464,7 +464,7 @@ class _LoginPageState extends State<LoginPage> {
             'id': userData.uid,
             'role': 'client',
             'fcmToken': fcmToken,
-          });
+          },SetOptions(merge: true));
 
           // User is an admin, navigate to admin home page
           Navigator.pushAndRemoveUntil(
@@ -478,7 +478,7 @@ class _LoginPageState extends State<LoginPage> {
             context: context,
             builder: (context) {
               return CupertinoAlertDialog(
-                title: Text('Login as an Admin'),
+                title: const Text('Login as an Admin'),
                 actions: [
                   CupertinoDialogAction(
                     child: const Text("OK"),

@@ -3,17 +3,15 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:homicare/pages/admin/home_editor_admin.dart';
 import 'package:homicare/api/notifications.dart';
 import 'package:homicare/pages/home_page_editor.dart';
-import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:homicare/firebase_options.dart';
 import 'package:homicare/pages/start.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform); // Initialize Firebase
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     await FirebaseApi().initNotifications();
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -29,7 +27,9 @@ void main() async {
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;
   final bool isAdmin;
-  const MyApp({required this.isLoggedIn, required this.isAdmin, super.key});
+
+  const MyApp({required this.isLoggedIn, required this.isAdmin, Key? key})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -39,24 +39,33 @@ class MyApp extends StatelessWidget {
         future: checkLoginStatus(),
         builder: (context, loginSnapshot) {
           if (loginSnapshot.connectionState == ConnectionState.waiting) {
-            return Container(
-              decoration: const BoxDecoration(
-                  color: Colors.white
+
+            // Show a splash screen with a white background and a centered icon
+            return Scaffold(
+              backgroundColor: Colors.white,
+              body: Center(
+                child: Image.asset(
+                  'assets/images/icon.png', // Replace with your icon asset path
+                  width: 100.0, // Adjust the size according to your needs
+                  height: 100.0,
+                ),
               ),
-              height: 30,
-              child: Lottie.asset('assets/images/loading.json', repeat: true),
             );
           } else {
             return FutureBuilder(
               future: checkLoginStatus(),
               builder: (context, roleSnapshot) {
                 if (roleSnapshot.connectionState == ConnectionState.waiting) {
-                  return Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.white
+                  // Show a splash screen with a white background and a centered icon
+                  return Scaffold(
+                    backgroundColor: Colors.white,
+                    body: Center(
+                      child: Image.asset(
+                        'assets/images/icon.png', // Replace with your icon asset path
+                        width: 100.0, // Adjust the size according to your needs
+                        height: 100.0,
+                      ),
                     ),
-                  height: 30,
-                  child: Lottie.asset('assets/images/loading.json', repeat: true),
                   );
                 } else {
                   if (isLoggedIn) {
@@ -79,7 +88,7 @@ class MyApp extends StatelessWidget {
   }
 
   Future<bool> checkLoginStatus() async {
-    await Future.delayed(const Duration(seconds: 1)); // Simulate asynchronous operation
+    await Future.delayed(const Duration(seconds: 2)); // Simulate asynchronous operation
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getBool("loggedIn") ?? false;
   }

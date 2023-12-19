@@ -2,20 +2,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:intl/intl.dart';
+import 'package:homicare/models/decline_request.dart';
 import 'package:lottie/lottie.dart';
 
-import '../../models/request.dart';
-
-class InProgressAdmin extends StatefulWidget {
-  const InProgressAdmin({super.key});
+class DeclinedServices extends StatefulWidget {
+  const DeclinedServices({super.key});
 
   @override
-  State<InProgressAdmin> createState() => _InProgressPageState();
+  State<DeclinedServices> createState() => _DeclinedServicesState();
 }
 
-class _InProgressPageState extends State<InProgressAdmin> {
-  late List<RequestModel> requests = [];
+class _DeclinedServicesState extends State<DeclinedServices> {
+  late List<DeclineModel> requests = [];
   late String currentUserId;
   bool isLoading = true;
 
@@ -41,9 +39,10 @@ class _InProgressPageState extends State<InProgressAdmin> {
           await FirebaseFirestore.instance.collection('requests').get();
       setState(() {
         requests = querySnapshot.docs
-            .where((doc) => doc['serviceProviderId'] ==currentUserId && doc['status'] == 'inprogress')
+            .where((doc) =>
+                doc['userId'] == currentUserId && doc['status'] == 'decline')
             .map((doc) {
-          return RequestModel(
+          return DeclineModel(
             status: doc['status'],
             repeat: doc['repeat'],
             time: doc['time'],
@@ -54,6 +53,10 @@ class _InProgressPageState extends State<InProgressAdmin> {
             month: doc['month'],
             rooms: doc['rooms'],
             requestId: doc['requestId'],
+            serviceProviderName: doc['serviceProviderName'],
+            serviceProviderPhone: '',
+            serviceProviderService: '',
+            completeTime: doc['completeTime'],
           );
         }).toList();
         isLoading = false;
@@ -71,7 +74,7 @@ class _InProgressPageState extends State<InProgressAdmin> {
         Padding(
           padding: const EdgeInsets.only(top: 50.0, right: 20.0, left: 20.0),
           child: Text(
-            'In Progress Services',
+            'Services',
             style: TextStyle(
               fontSize: 35,
               color: Colors.grey.shade900,
@@ -232,30 +235,123 @@ class _InProgressPageState extends State<InProgressAdmin> {
                                         ],
                                       ),
                                     ),
-                                    const SizedBox(height: 10.0),
+
+                                    //details
                                     SizedBox(
-                                      width: MediaQuery.of(context).size.width -100,
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          completeRequest(context,requests[index].requestId);
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.black,
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(
-                                                    10),
+                                        width: MediaQuery.of(context)
+                                                .size
+                                                .width -
+                                            50,
+                                        child: const Divider()),
+                                    //service provider details
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          const TextSpan(
+                                            text: 'Name: ',
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold,
+                                            ),
                                           ),
-                                        ),
-                                        child: const Text(
-                                          'Done',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 15,
-                                            fontWeight: FontWeight.w500,
+                                          TextSpan(
+                                            text: request
+                                                .serviceProviderName,
+                                            style: DefaultTextStyle.of(
+                                                    context)
+                                                .style,
                                           ),
-                                        ),
+                                        ],
                                       ),
+                                    ),
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          const TextSpan(
+                                            text: 'Time: ',
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: request.completeTime,
+                                            style: DefaultTextStyle.of(
+                                                    context)
+                                                .style,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    RichText(
+                                      text: TextSpan(
+                                        children: [
+                                          const TextSpan(
+                                            text: 'Service: ',
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text: request.serviceName,
+                                            style: DefaultTextStyle.of(
+                                                    context)
+                                                .style,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10.0),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.end,
+                                      children: [
+                                        Tooltip(
+                                            message:
+                                            'Request declined by the service provider',
+                                            child: IconButton(
+                                              icon: const Icon(Icons.info),
+                                              onPressed: () {showCupertinoDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return CupertinoAlertDialog(
+                                                    title: const Text('Oops!'),
+                                                    content: const Text('Request declined by the service provider'),
+                                                    actions: [
+                                                      CupertinoDialogAction(
+                                                        child:const Text('OK'),
+                                                        onPressed: () {
+                                                          Navigator.pop(context); // Close the dialog
+                                                        },
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                              },
+                                            )),
+                                        const SizedBox(height: 13,),
+                                        ElevatedButton(
+                                          onPressed: () {},
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.black,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                      10),
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'Declined',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -268,7 +364,7 @@ class _InProgressPageState extends State<InProgressAdmin> {
                   )
                   : const Center(
                       child: Text(
-                        'No request in progress',
+                        'No request was declined',
                         style: TextStyle(fontSize: 15),
                       ),
                     ),
@@ -276,60 +372,25 @@ class _InProgressPageState extends State<InProgressAdmin> {
       ],
     );
   }
-  void completeRequest(BuildContext context, String requestId) async {
-    try {
-      // Show a CupertinoDialog for confirmation
-      bool confirm = await showCupertinoDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return CupertinoAlertDialog(
-            title: const Text("Confirm Completion"),
-            content: const Text("Are you sure you want to complete this request?"),
-            actions: [
-              CupertinoDialogAction(
-                onPressed: () {
-                  Navigator.pop(context, false); // User canceled
-                },
-                child: const Text("No"),
-              ),
-              CupertinoDialogAction(
-                onPressed: () {
-                  Navigator.pop(context, true); // User confirmed
-                },
-                child: const Text("Yes"),
-              ),
-            ],
-          );
-        },
-      );
 
-      if (confirm == true) {
-        FirebaseFirestore firestore = FirebaseFirestore.instance;
-        DocumentReference requestDoc = firestore.collection('requests').doc(requestId);
-        DocumentSnapshot requestSnapshot = await requestDoc.get();
-        await requestDoc.update({
-          'status': 'completed',
-          'completeTime':DateFormat('d MMMM y H:mm').format(DateTime.now()),
-        });
-        fetchData();
-        print('Request Completed Successfully');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            duration: Duration(seconds: 1),
-            backgroundColor: Colors.white,
-            content: Text(
-              "Request Completed Successfully",
-              style: TextStyle(color: Colors.black),
-            ),
-          ),
-        );
-      } else {
-        print('Request completion canceled by user');
-      }
+  Future<void> deleteService(String requestId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('requests')
+          .doc(requestId)
+          .delete();
+      print('Service deleted successfully');
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.white,
+        content: Text(
+          "Request has been deleted.",
+          style: TextStyle(color: Colors.black),
+        ),
+      ));
     } catch (e) {
-      // Handle any errors that might occur during the process
-      print('Error: $e');
+      print('Error deleting service: $e');
+      // Handle errors as needed
     }
   }
-
 }

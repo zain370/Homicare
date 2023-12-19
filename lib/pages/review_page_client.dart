@@ -231,6 +231,7 @@ class _ReviewPageState extends State<ReviewPage> {
             ),
           ),
         );
+        calculateAndStoreAverageRating(serviceProviderId);
         widget.function();
         Navigator.pop(context);
       } else {
@@ -239,6 +240,54 @@ class _ReviewPageState extends State<ReviewPage> {
     } catch (e) {
       // Handle any errors that might occur during the process
       print('Error: $e');
+    }
+  }
+
+
+  //update the rating
+  Future<void> calculateAndStoreAverageRating(String serviceProviderId) async {
+    try {
+      // Query completed requests for the specified service provider
+      var completedRequestsQuery = await FirebaseFirestore.instance
+          .collection('requests')
+          .where('serviceProviderId', isEqualTo: serviceProviderId)
+          .where('status', isEqualTo: 'completed')
+          .where('serviceRating', isNotEqualTo: null)
+          .get();
+
+      if (completedRequestsQuery.docs.isNotEmpty) {
+        double totalRating = 0.0;
+        int numberOfRatings = completedRequestsQuery.docs.length;
+
+        // Calculate the total rating
+        for (var completedRequestDoc in completedRequestsQuery.docs) {
+          // Convert serviceRating from string to double
+          var rating =
+              double.tryParse(completedRequestDoc['serviceRating'] ?? '0.0') ??
+                  0.0;
+          totalRating += rating;
+        }
+
+        // Calculate the average rating
+        double averageRating = totalRating / numberOfRatings;
+
+        // Convert averageRating to string with two decimal places
+        String averageRatingString = averageRating.toStringAsFixed(1);
+        // Update the service provider's user document with the average rating as a string
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(serviceProviderId)
+            .set({
+          'averageRating': averageRatingString,
+        }, SetOptions(merge: true));
+
+        print('Average Rating for $serviceProviderId: $averageRatingString');
+      } else {
+        // No completed requests with ratings
+        print('No completed requests with ratings for $serviceProviderId');
+      }
+    } catch (e) {
+      print('Error calculating and storing average rating: $e');
     }
   }
 }

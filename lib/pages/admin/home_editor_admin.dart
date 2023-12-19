@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:homicare/pages/admin/completed_admin.dart';
 import 'package:homicare/pages/admin/in_progress_admin.dart';
 import 'package:homicare/pages/admin/profile_admin_detail.dart';
+import 'package:homicare/pages/admin/special_request_admin.dart';
 import 'home_services_admin.dart';
 
 class MyHomePageAdmin extends StatefulWidget {
@@ -16,6 +17,7 @@ class _MyHomePageState extends State<MyHomePageAdmin> {
 
   final List<Widget> _pages = [
     const HomePageAdmin(),
+    const SpecialRequest(),
     const InProgressAdmin(),
     const CompletedAdmin(),
     const ProfileAdmin()
@@ -46,6 +48,10 @@ class _MyHomePageState extends State<MyHomePageAdmin> {
           BottomNavigationBarItem(
             label:'Request',
             icon: Icon(Icons.request_quote_outlined),
+          ),
+          BottomNavigationBarItem(
+            label:'Inbox',
+            icon: Icon(Icons.indeterminate_check_box_outlined),
           ),
           BottomNavigationBarItem(
             label: 'In Progress',

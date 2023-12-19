@@ -2,15 +2,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'date_time.dart';
 
-class CleaningPage extends StatefulWidget {
-  const CleaningPage({Key? key, required this.serviceName}) : super(key: key);
+class SelectRooms extends StatefulWidget {
+  const SelectRooms({Key? key, required this.serviceName}) : super(key: key);
   final String serviceName;
 
   @override
-  State<CleaningPage> createState() => _CleaningPageState();
+  State<SelectRooms> createState() => _SelectRoomsState();
 }
 
-class _CleaningPageState extends State<CleaningPage> {
+class _SelectRoomsState extends State<SelectRooms> {
   // Rooms to clean
   final List<dynamic> _rooms = [
     ['Living Room', 'assets/images/sofa.png', Colors.red, 0],

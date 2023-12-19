@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../models/service.dart';
-import 'cleaning.dart';
+import 'select_rooms.dart';
 
 class SelectService extends StatefulWidget {
   const SelectService({Key? key}) : super(key: key);
@@ -32,7 +32,7 @@ class _SelectServiceState extends State<SelectService> {
                 Navigator.push(
                   context,
                   CupertinoPageRoute(
-                    builder: (context) => CleaningPage(
+                    builder: (context) => SelectRooms(
                       serviceName: services[selectedService].name,
                     ),
                   ),

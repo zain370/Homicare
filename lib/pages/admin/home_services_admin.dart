@@ -59,7 +59,7 @@ class _HomePageState extends State<HomePageAdmin> {
 
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => StartPage()),
+          MaterialPageRoute(builder: (context) => const StartPage()),
           (route) => false,
         );
       } catch (e) {
@@ -126,7 +126,7 @@ class _HomePageState extends State<HomePageAdmin> {
       }
   }
 
-  Future<void> fetchByLocation() async {
+  Future<void> fetchByLocation(String selectOptions ) async {
     try {
       QuerySnapshot<Map<String, dynamic>> querySnapshot =
           await FirebaseFirestore.instance.collection('requests').get();
@@ -152,7 +152,7 @@ class _HomePageState extends State<HomePageAdmin> {
       setState(() {
         if (selectOption != 'Search by City  ') {
           requests = newRequests
-              .where((request) => request.address.contains(selectOption))
+              .where((request) => request.address.toLowerCase().contains(selectOptions))
               .toList();
         } else {
           fetchData();
@@ -233,7 +233,7 @@ class _HomePageState extends State<HomePageAdmin> {
                 onChanged: (String? newValue) {
                   setState(() {
                     selectOption = newValue!;
-                    fetchByLocation();
+                    fetchByLocation(selectOption.toLowerCase());
                   });
                 },
                 items: <String>[
@@ -268,219 +268,217 @@ class _HomePageState extends State<HomePageAdmin> {
                   : RefreshIndicator(
                       onRefresh: fetchData,
                       child: requests.isNotEmpty
-                          ? Expanded(
-                              child: ListView.builder(
-                                itemCount: requests.length,
-                                itemBuilder: (context, index) {
-                                  var request = requests[index];
-                                  return Card(
-                                    color: Colors.white,
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 25.0, vertical: 10),
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(10.0),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          // Left side - Image
-                                          Image.asset(
-                                            'assets/images/${request.serviceName.toLowerCase()}.png',
-                                            width: 80,
-                                            height: 100,
-                                            fit: BoxFit.cover,
-                                          ),
-                                          const SizedBox(
-                                              width: 18.0), // Adjust spacing
+                          ? ListView.builder(
+                            itemCount: requests.length,
+                            itemBuilder: (context, index) {
+                              var request = requests[index];
+                              return Card(
+                                color: Colors.white,
+                                margin: const EdgeInsets.symmetric(
+                                    horizontal: 25.0, vertical: 10),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10.0),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Left side - Image
+                                      Image.asset(
+                                        'assets/images/${request.serviceName.toLowerCase()}.png',
+                                        width: 80,
+                                        height: 100,
+                                        fit: BoxFit.cover,
+                                      ),
+                                      const SizedBox(
+                                          width: 18.0), // Adjust spacing
 
-                                          // Right side - Text details
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                      // Right side - Text details
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            RichText(
+                                              text: TextSpan(
+                                                children: [
+                                                  const TextSpan(
+                                                    text: 'Service Name: ',
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  TextSpan(
+                                                    text:
+                                                        request.serviceName,
+                                                    style:
+                                                        DefaultTextStyle.of(
+                                                                context)
+                                                            .style,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            RichText(
+                                              text: TextSpan(
+                                                children: [
+                                                  const TextSpan(
+                                                    text: 'Date: ',
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  TextSpan(
+                                                    text:
+                                                        "${request.day} ${request.month}",
+                                                    style:
+                                                        DefaultTextStyle.of(
+                                                                context)
+                                                            .style,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            RichText(
+                                              text: TextSpan(
+                                                children: [
+                                                  const TextSpan(
+                                                    text: 'Rooms: ',
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  TextSpan(
+                                                    text: request.rooms,
+                                                    style:
+                                                        DefaultTextStyle.of(
+                                                                context)
+                                                            .style,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            RichText(
+                                              text: TextSpan(
+                                                children: [
+                                                  const TextSpan(
+                                                    text: 'Address: ',
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  TextSpan(
+                                                    text: request.address,
+                                                    style:
+                                                        DefaultTextStyle.of(
+                                                                context)
+                                                            .style,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            RichText(
+                                              text: TextSpan(
+                                                children: [
+                                                  const TextSpan(
+                                                    text: 'Time: ',
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  TextSpan(
+                                                    text: request.time,
+                                                    style:
+                                                        DefaultTextStyle.of(
+                                                                context)
+                                                            .style,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            RichText(
+                                              text: TextSpan(
+                                                children: [
+                                                  const TextSpan(
+                                                    text: 'Repeat: ',
+                                                    style: TextStyle(
+                                                      color: Colors.black,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  TextSpan(
+                                                    text: request.repeat,
+                                                    style:
+                                                        DefaultTextStyle.of(
+                                                                context)
+                                                            .style,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(height: 10.0),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
                                               children: [
-                                                RichText(
-                                                  text: TextSpan(
-                                                    children: [
-                                                      const TextSpan(
-                                                        text: 'Service Name: ',
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                      TextSpan(
-                                                        text:
-                                                            request.serviceName,
-                                                        style:
-                                                            DefaultTextStyle.of(
-                                                                    context)
-                                                                .style,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                RichText(
-                                                  text: TextSpan(
-                                                    children: [
-                                                      const TextSpan(
-                                                        text: 'Date: ',
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                      TextSpan(
-                                                        text:
-                                                            "${request.day} ${request.month}",
-                                                        style:
-                                                            DefaultTextStyle.of(
-                                                                    context)
-                                                                .style,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                RichText(
-                                                  text: TextSpan(
-                                                    children: [
-                                                      const TextSpan(
-                                                        text: 'Rooms: ',
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                      TextSpan(
-                                                        text: request.rooms,
-                                                        style:
-                                                            DefaultTextStyle.of(
-                                                                    context)
-                                                                .style,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                RichText(
-                                                  text: TextSpan(
-                                                    children: [
-                                                      const TextSpan(
-                                                        text: 'Address: ',
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                      TextSpan(
-                                                        text: request.address,
-                                                        style:
-                                                            DefaultTextStyle.of(
-                                                                    context)
-                                                                .style,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                RichText(
-                                                  text: TextSpan(
-                                                    children: [
-                                                      const TextSpan(
-                                                        text: 'Time: ',
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                      TextSpan(
-                                                        text: request.time,
-                                                        style:
-                                                            DefaultTextStyle.of(
-                                                                    context)
-                                                                .style,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                RichText(
-                                                  text: TextSpan(
-                                                    children: [
-                                                      const TextSpan(
-                                                        text: 'Repeat: ',
-                                                        style: TextStyle(
-                                                          color: Colors.black,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      ),
-                                                      TextSpan(
-                                                        text: request.repeat,
-                                                        style:
-                                                            DefaultTextStyle.of(
-                                                                    context)
-                                                                .style,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 10.0),
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.end,
-                                                  children: [
-                                                    SizedBox(
-                                                      width:
-                                                          MediaQuery.of(context)
-                                                                  .size
-                                                                  .width -
-                                                              190,
-                                                      child: ElevatedButton(
-                                                        onPressed: () {
-                                                          acceptUserRequest(
-                                                              requests[index]
-                                                                  .requestId,
-                                                              requests[index]
-                                                                  .userId);
-                                                        },
-                                                        style: ElevatedButton
-                                                            .styleFrom(
-                                                          backgroundColor:
-                                                              Colors.black,
-                                                          shape:
-                                                              RoundedRectangleBorder(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .circular(
-                                                                        10),
-                                                          ),
-                                                        ),
-                                                        child: const Text(
-                                                          'Accept Request',
-                                                          style: TextStyle(
-                                                            color: Colors.white,
-                                                            fontSize: 15,
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                          ),
-                                                        ),
+                                                SizedBox(
+                                                  width:
+                                                      MediaQuery.of(context)
+                                                              .size
+                                                              .width -
+                                                          190,
+                                                  child: ElevatedButton(
+                                                    onPressed: () {
+                                                      acceptUserRequest(
+                                                          requests[index]
+                                                              .requestId,
+                                                          requests[index]
+                                                              .userId);
+                                                    },
+                                                    style: ElevatedButton
+                                                        .styleFrom(
+                                                      backgroundColor:
+                                                          Colors.black,
+                                                      shape:
+                                                          RoundedRectangleBorder(
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(
+                                                                    10),
                                                       ),
                                                     ),
-                                                  ],
+                                                    child: const Text(
+                                                      'Accept Request',
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                  ),
                                                 ),
                                               ],
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            )
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          )
                           : const Center(
                               child: Text(
                                 'No request',
@@ -525,20 +523,20 @@ class _HomePageState extends State<HomePageAdmin> {
         context: context,
         builder: (BuildContext context) {
           return CupertinoAlertDialog(
-            title: Text("Confirm Acceptance"),
-            content: Text("Are you sure you want to accept this request?"),
+            title: const Text("Confirm Acceptance"),
+            content: const Text("Are you sure you want to accept this request?"),
             actions: [
               CupertinoDialogAction(
                 onPressed: () {
                   Navigator.pop(context, false); // User canceled
                 },
-                child: Text("No"),
+                child: const Text("No"),
               ),
               CupertinoDialogAction(
                 onPressed: () {
                   Navigator.pop(context, true); // User confirmed
                 },
-                child: Text("Yes"),
+                child: const Text("Yes"),
               ),
             ],
           );
@@ -565,8 +563,8 @@ class _HomePageState extends State<HomePageAdmin> {
 
         print('Request accepted successfully.');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            duration: const Duration(seconds: 1),
+          const SnackBar(
+            duration: Duration(seconds: 1),
             backgroundColor: Colors.white,
             content: Text(
               "Request Accepted Successfully",
