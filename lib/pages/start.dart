@@ -101,7 +101,7 @@ class _StartPageState extends State<StartPage> {
                   ),
                   const SizedBox(height: 20),
                   SizedBox(
-                    width: MediaQuery.of(context).size.width* .9,
+                    width: MediaQuery.of(context).size.width * .9,
                     child: Padding(
                       padding: const EdgeInsets.all(20.0),
                       child: ElevatedButton(

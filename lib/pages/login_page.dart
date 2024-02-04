@@ -20,6 +20,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passController = TextEditingController();
   bool _obscureText = true;
@@ -310,14 +311,15 @@ class _LoginPageState extends State<LoginPage> {
         password: passController.text.trim(),
       );
       User? userData = userCredential.user;
-
       if (!context.mounted) return;
 
       if (userData != null) {
         // Check if the user's email is verified
         if (userData.emailVerified) {
           // Fetch user role based on uid
+
           String userUid = userData.uid;
+
           String userRole = await fetchUserRoleFromBackend(userUid);
           // Get FCM token
           String? fcmToken = await FirebaseMessaging.instance.getToken();
